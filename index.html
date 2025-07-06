@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Cloud vs. Microsoft Azure | Cloud Services Comparison</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #011627;
+            color: #FDFFFC;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 40vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .card {
+            background-color: #012a4a;
+            border: 1px solid #013a63;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(10, 147, 150, 0.2), 0 4px 6px -2px rgba(10, 147, 150, 0.1);
+        }
+        .stat-number {
+            font-weight: 900;
+            color: #94D2BD;
+            text-shadow: 0 0 15px rgba(148, 210, 189, 0.5);
+        }
+        .flow-line {
+            position: relative;
+        }
+        .flow-line::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 100%;
+            height: 2rem;
+            border-left: 2px dashed #4a5568;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-2">Cloud Titans</h1>
+            <p class="text-xl md:text-2xl text-[#94D2BD]">A Visual Showdown: Google Cloud vs. Microsoft Azure</p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+            <section class="card rounded-lg shadow-lg p-6 md:col-span-1 lg:col-span-1">
+                <h2 class="text-2xl font-bold mb-4 text-[#EE9B00]">Market Snapshot</h2>
+                <p class="text-gray-300 mb-4 text-sm">Microsoft Azure holds a strong second place in the cloud infrastructure market, with Google Cloud Platform persistently growing as a strong third contender, challenging the duopoly.</p>
+                <div class="chart-container mx-auto">
+                    <canvas id="marketShareChart"></canvas>
+                </div>
+            </section>
+
+            <section class="card rounded-lg shadow-lg p-6 md:col-span-1 lg:col-span-2 flex flex-col justify-center">
+                 <h2 class="text-2xl font-bold mb-4 text-[#EE9B00]">Platform Philosophy</h2>
+                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                     <div>
+                         <h3 class="text-xl font-semibold mb-2 text-[#94D2BD]">🚀 Google Cloud</h3>
+                         <p class="text-gray-300 text-sm">Born from Google's internal infrastructure, GCP excels in data analytics, machine learning, containerization (Kubernetes), and open-source technologies. It's often favored by data-native companies and developers seeking cutting-edge tools.</p>
+                     </div>
+                     <div>
+                        <h3 class="text-xl font-semibold mb-2 text-[#94D2BD]">🏢 Microsoft Azure</h3>
+                        <p class="text-gray-300 text-sm">Leveraging Microsoft's deep enterprise roots, Azure offers seamless integration with existing business software like Office 365 and Active Directory. It's a leader in hybrid cloud solutions and a trusted choice for large organizations.</p>
+                     </div>
+                 </div>
+            </section>
+            
+            <section class="card rounded-lg shadow-lg p-6 md:col-span-2 lg:col-span-3">
+                <h2 class="text-2xl font-bold mb-4 text-center text-[#EE9B00]">Core Services Head-to-Head</h2>
+                <p class="text-gray-300 mb-6 text-center text-sm max-w-3xl mx-auto">Both platforms offer a vast array of services. This radar chart provides a high-level comparison of perceived strengths across key domains based on industry analysis.</p>
+                <div class="chart-container" style="max-width: 600px;">
+                    <canvas id="serviceRadarChart"></canvas>
+                </div>
+            </section>
+            
+            <section class="card rounded-lg shadow-lg p-6 md:col-span-2 lg:col-span-3">
+                <h2 class="text-2xl font-bold mb-4 text-center text-[#EE9B00]">What's in a Name? Service Equivalents</h2>
+                 <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-300">
+                        <thead class="text-xs text-[#EE9B00] uppercase bg-[#013a63]">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">Category</th>
+                                <th scope="col" class="px-6 py-3">Google Cloud</th>
+                                <th scope="col" class="px-6 py-3">Microsoft Azure</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-gray-700">
+                                <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">Compute</th>
+                                <td class="px-6 py-4">Compute Engine</td>
+                                <td class="px-6 py-4">Virtual Machines</td>
+                            </tr>
+                             <tr class="border-b border-gray-700 bg-[#012a4a]">
+                                <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">Object Storage</th>
+                                <td class="px-6 py-4">Cloud Storage</td>
+                                <td class="px-6 py-4">Blob Storage</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">Databases (SQL)</th>
+                                <td class="px-6 py-4">Cloud SQL, Spanner</td>
+                                <td class="px-6 py-4">Azure SQL Database</td>
+                            </tr>
+                             <tr class="border-b border-gray-700 bg-[#012a4a]">
+                                <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">Containers</th>
+                                <td class="px-6 py-4">Google Kubernetes Engine (GKE)</td>
+                                <td class="px-6 py-4">Azure Kubernetes Service (AKS)</td>
+                            </tr>
+                            <tr class="border-b border-gray-700">
+                                <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">Serverless</th>
+                                <td class="px-6 py-4">Cloud Functions, Cloud Run</td>
+                                <td class="px-6 py-4">Azure Functions, Container Apps</td>
+                            </tr>
+                             <tr class="bg-[#012a4a]">
+                                <th scope="row" class="px-6 py-4 font-medium whitespace-nowrap">AI / ML Platform</th>
+                                <td class="px-6 py-4">Vertex AI</td>
+                                <td class="px-6 py-4">Azure Machine Learning</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="card rounded-lg shadow-lg p-6 md:col-span-2 lg:col-span-3">
+                <h2 class="text-2xl font-bold mb-4 text-center text-[#EE9B00]">The Cost of Cloud: Pricing Models</h2>
+                <p class="text-gray-300 mb-8 text-center text-sm max-w-3xl mx-auto">Both platforms offer flexible pricing, but their discount structures have key differences. Google's model often favors flexibility with automatic discounts, while Azure provides deep savings for long-term planning.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    
+                    <div class="flex flex-col items-center">
+                        <div class="p-4 rounded-full bg-[#0A9396] text-white w-24 h-24 flex items-center justify-center text-lg font-bold shadow-lg">On-Demand</div>
+                        <div class="h-8 w-px bg-gray-600 my-2"></div>
+                        <div class="w-full p-4 bg-[#011f36] rounded-lg">
+                            <h4 class="font-semibold">Pay-as-you-go</h4>
+                            <p class="text-xs text-gray-400 mt-1">Both offer standard, flexible pricing based on exact usage. Ideal for unpredictable workloads.</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="p-4 rounded-full bg-[#CA6702] text-white w-24 h-24 flex items-center justify-center text-lg font-bold shadow-lg">Commitment</div>
+                         <div class="h-8 w-px bg-gray-600 my-2"></div>
+                        <div class="w-full p-4 bg-[#011f36] rounded-lg">
+                            <h4 class="font-semibold">Discounts for Planning</h4>
+                            <p class="text-xs text-gray-400 mt-1">GCP: Committed Use Discounts (1 or 3 years). Azure: Reserved Instances & Savings Plans (1 or 3 years).</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center">
+                        <div class="p-4 rounded-full bg-[#AE2012] text-white w-24 h-24 flex items-center justify-center text-lg font-bold shadow-lg">Spot Use</div>
+                         <div class="h-8 w-px bg-gray-600 my-2"></div>
+                        <div class="w-full p-4 bg-[#011f36] rounded-lg">
+                           <h4 class="font-semibold">Lowest Prices</h4>
+                           <p class="text-xs text-gray-400 mt-1">GCP: Spot VMs. Azure: Spot Virtual Machines. Both offer massive savings on spare capacity for fault-tolerant jobs.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="mt-6 p-4 bg-[#4a0e08] rounded-lg text-center border border-[#9B2226]">
+                    <h4 class="font-bold text-[#EE9B00]">✨ Google's Special Sauce: Sustained Use Discounts</h4>
+                    <p class="text-sm text-gray-200 mt-1">GCP automatically applies discounts to Compute Engine resources the longer they run within a month, no commitment needed. This is a unique, user-friendly benefit for persistent workloads.</p>
+                </div>
+            </section>
+            
+             <section class="card rounded-lg shadow-lg p-6 md:col-span-full">
+                 <h2 class="text-2xl font-bold mb-6 text-center text-[#EE9B00]">The Right Choice Depends on Your Needs</h2>
+                 <p class="text-gray-300 text-center text-sm max-w-4xl mx-auto">Ultimately, the decision between Google Cloud and Azure is not about which is "better," but which is the "best fit" for your organization's strategy, existing technology stack, and future goals. Startups focused on data and AI may find a natural home in GCP's ecosystem, while large enterprises already invested in Microsoft products can leverage Azure for a seamless, hybrid cloud experience.</p>
+             </section>
+
+        </main>
+
+        <footer class="text-center mt-12 text-gray-500 text-xs">
+            <p>Infographic created for illustrative purposes. Data points are based on publicly available market analyses and product information. Always consult official documentation for the latest details.</p>
+        </footer>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const wrapLabel = (label) => {
+                if (typeof label !== 'string' || label.length <= 16) {
+                    return label;
+                }
+                const words = label.split(' ');
+                const lines = [];
+                let currentLine = '';
+                for (const word of words) {
+                    if ((currentLine + ' ' + word).length > 16 && currentLine.length > 0) {
+                        lines.push(currentLine);
+                        currentLine = word;
+                    } else {
+                        currentLine = currentLine ? currentLine + ' ' + word : word;
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            };
+
+            const multiLineTooltipTitle = {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    }
+                    return label;
+                }
+            };
+            
+            const commonChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#FDFFFC',
+                            font: {
+                                family: "'Inter', sans-serif"
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: multiLineTooltipTitle,
+                        titleFont: { family: "'Inter', sans-serif" },
+                        bodyFont: { family: "'Inter', sans-serif" },
+                    }
+                }
+            };
+
+            const marketShareCtx = document.getElementById('marketShareChart');
+            if(marketShareCtx) {
+                new Chart(marketShareCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Amazon Web Services', 'Microsoft Azure', 'Google Cloud', 'Other'],
+                        datasets: [{
+                            label: 'Cloud Market Share (Q1 2025 est.)',
+                            data: [31, 25, 11, 33],
+                            backgroundColor: [
+                                '#0A9396',
+                                '#94D2BD',
+                                '#EE9B00',
+                                '#4a5568'
+                            ],
+                            borderColor: '#012a4a',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        ...commonChartOptions,
+                        plugins: {
+                            ...commonChartOptions.plugins,
+                            tooltip: {
+                                callbacks: {
+                                    ...multiLineTooltipTitle,
+                                     label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed + '%';
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            const serviceRadarCtx = document.getElementById('serviceRadarChart');
+            if(serviceRadarCtx) {
+                const radarLabels = ['Compute', 'Storage', 'Databases', ['AI & Machine', 'Learning'], 'Networking', 'Hybrid Cloud', ['Open Source', 'Friendliness']];
+                new Chart(serviceRadarCtx, {
+                    type: 'radar',
+                    data: {
+                        labels: radarLabels.map(wrapLabel),
+                        datasets: [{
+                            label: 'Google Cloud',
+                            data: [4, 4, 5, 5, 4, 3, 5],
+                            backgroundColor: 'rgba(238, 155, 0, 0.2)',
+                            borderColor: '#EE9B00',
+                            pointBackgroundColor: '#EE9B00',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#EE9B00'
+                        }, {
+                            label: 'Microsoft Azure',
+                            data: [4, 4, 4, 4, 4, 5, 3],
+                            backgroundColor: 'rgba(148, 210, 189, 0.2)',
+                            borderColor: '#94D2BD',
+                            pointBackgroundColor: '#94D2BD',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#94D2BD'
+                        }]
+                    },
+                    options: {
+                        ...commonChartOptions,
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    color: 'rgba(255, 255, 255, 0.2)'
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.2)'
+                                },
+                                pointLabels: {
+                                    color: '#FDFFFC',
+                                    font: {
+                                       size: 11,
+                                       family: "'Inter', sans-serif"
+                                    }
+                                },
+                                ticks: {
+                                    color: '#FDFFFC',
+                                    backdropColor: '#011627',
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>
