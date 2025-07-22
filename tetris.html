@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Game (Upward Play)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1a202c; /* Dark background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #e2e8f0; /* Light text */
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            background-color: #2d3748; /* Slightly lighter dark background for container */
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+            border: 2px solid #4a5568;
+        }
+
+        canvas {
+            background-color: #000; /* Tetris board background */
+            border: 4px solid #4a5568;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .control-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-button {
+            background-color: #4a5568;
+            color: #e2e8f0;
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .control-button:hover {
+            background-color: #636b7a;
+            transform: translateY(-2px);
+        }
+
+        .control-button:active {
+            background-color: #3b424e;
+            transform: translateY(0);
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 25px 40px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            z-index: 1000;
+            border: 3px solid #63b3ed;
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.7);
+            display: none; /* Hidden by default */
+        }
+
+        .message-box button {
+            background-color: #63b3ed;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+
+        .message-box button:hover {
+            background-color: #4299e1;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen">
+    <div class="game-container">
+        <h1 class="text-3xl font-bold text-blue-400 mb-4">Scale Up Tetris</h1>
+        <canvas id="tetrisCanvas" width="240" height="480"></canvas>
+        <div class="game-info">
+            <div id="score" class="text-xl">Score: 0</div>
+            <div id="level" class="text-xl">Level: 1</div>
+        </div>
+        <div class="controls">
+            <div class="control-row">
+                <button id="rotateButton" class="control-button">Rotate</button>
+            </div>
+            <div class="control-row">
+                <button id="leftButton" class="control-button">Left</button>
+                <button id="upButton" class="control-button">Up</button> <!-- Renamed button -->
+                <button id="rightButton" class="control-button">Right</button>
+            </div>
+            <div class="control-row">
+                <button id="startButton" class="control-button">Start Game</button>
+                <button id="resetButton" class="control-button">Reset Game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="messageBox" class="message-box">
+        <p id="messageText"></p>
+        <button id="messageBoxButton">OK</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('tetrisCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const levelDisplay = document.getElementById('level');
+        const messageBox = document.getElementById('messageBox');
+        const messageText = document.getElementById('messageText');
+        const messageBoxButton = document.getElementById('messageBoxButton');
+
+        const COLS = 10;
+        const ROWS = 20;
+        const BLOCK_SIZE = 24; // Each block is 24x24 pixels
+        const EMPTY = 'black'; // Color for empty cells
+
+        // Tetromino shapes and colors
+        const SHAPES = [
+            [[0, 0, 0, 0], [1, 1, 1, 1], [0, 0, 0, 0], [0, 0, 0, 0]], // I
+            [[1, 1], [1, 1]], // O
+            [[0, 1, 0], [1, 1, 1], [0, 0, 0]], // T
+            [[1, 1, 0], [0, 1, 1], [0, 0, 0]], // S
+            [[0, 1, 1], [1, 1, 0], [0, 0, 0]], // Z
+            [[1, 0, 0], [1, 1, 1], [0, 0, 0]], // J
+            [[0, 0, 1], [1, 1, 1], [0, 0, 0]]  // L
+        ];
+
+        const COLORS = [
+            'cyan', 'yellow', 'purple', 'green', 'red', 'blue', 'orange'
+        ];
+
+        let board = [];
+        let currentPiece;
+        let nextPiece;
+        let score = 0;
+        let level = 1;
+        let dropInterval = 1000; // Milliseconds (now for upward movement)
+        let gameLoop;
+        let gameOver = false;
+
+        // --- Game Initialization ---
+        function init() {
+            // Create an empty board
+            for (let r = 0; r < ROWS; r++) {
+                board[r] = [];
+                for (let c = 0; c < COLS; c++) {
+                    board[r][c] = EMPTY;
+                }
+            }
+            score = 0;
+            level = 1;
+            dropInterval = 1000;
+            gameOver = false;
+            scoreDisplay.textContent = `Score: ${score}`;
+            levelDisplay.textContent = `Level: ${level}`;
+            drawBoard();
+            generateNewPiece();
+            drawNextPiece();
+            if (gameLoop) clearInterval(gameLoop); // Clear any existing loop
+        }
+
+        // --- Piece Class ---
+        class Piece {
+            constructor(shape, color) {
+                this.shape = shape;
+                this.color = color;
+                this.x = Math.floor(COLS / 2) - Math.floor(shape[0].length / 2); // Start in the middle
+                this.y = ROWS - shape.length; // Start at the bottom for upward play
+            }
+
+            // Draw the piece on the board
+            draw() {
+                for (let r = 0; r < this.shape.length; r++) {
+                    for (let c = 0; c < this.shape[r].length; c++) {
+                        if (this.shape[r][c]) {
+                            drawSquare(this.x + c, this.y + r, this.color);
+                        }
+                    }
+                }
+            }
+
+            // Erase the piece from the board
+            erase() {
+                for (let r = 0; r < this.shape.length; r++) {
+                    for (let c = 0; c < this.shape[r].length; c++) {
+                        if (this.shape[r][c]) {
+                            drawSquare(this.x + c, this.y + r, EMPTY);
+                        }
+                    }
+                }
+            }
+
+            // Move the piece up by one step (soft rise)
+            moveUpOneStep() {
+                // Check collision for moving up (-1 in y-offset)
+                if (!this.collision(0, -1, this.shape)) {
+                    this.erase();
+                    this.y--; // Move up
+                    this.draw();
+                    return true; // Indicate success
+                } else {
+                    this.lock();
+                    score += 10; // Score for locking a piece
+                    updateScoreAndLevel();
+                    generateNewPiece();
+                    return false; // Indicate collision/lock
+                }
+            }
+
+            // Hard rise: move the piece all the way up instantly
+            moveUpAllTheWay() {
+                this.erase(); // Erase current position before rapid ascent
+                // Continue moving up as long as there's no collision when moving one step up
+                while (!this.collision(0, -1, this.shape)) {
+                    this.y--; // Move up
+                    score += 2; // Small score for each line risen in hard rise
+                }
+                this.draw(); // Draw at the final position
+                this.lock(); // Lock the piece
+                updateScoreAndLevel(); // Update score/level after locking
+                generateNewPiece(); // Generate new piece immediately
+            }
+
+            // Move the piece left
+            moveLeft() {
+                if (!this.collision(-1, 0, this.shape)) {
+                    this.erase();
+                    this.x--;
+                    this.draw();
+                }
+            }
+
+            // Move the piece right
+            moveRight() {
+                if (!this.collision(1, 0, this.shape)) {
+                    this.erase();
+                    this.x++;
+                    this.draw();
+                }
+            }
+
+            // Rotate the piece
+            rotate() {
+                let nextShape = this.rotateMatrix(this.shape);
+                let kick = 0; // Wall kick adjustment
+
+                // Simple wall kick logic
+                if (this.collision(0, 0, nextShape)) {
+                    if (this.x > COLS / 2) { // Try moving left
+                        kick = -1;
+                    } else { // Try moving right
+                        kick = 1;
+                    }
+                }
+
+                if (!this.collision(kick, 0, nextShape)) {
+                    this.erase();
+                    this.x += kick;
+                    this.shape = nextShape;
+                    this.draw();
+                }
+            }
+
+            // Rotate a matrix (for piece rotation)
+            rotateMatrix(matrix) {
+                const N = matrix.length;
+                const M = matrix[0].length;
+                let newMatrix = Array.from({ length: M }, () => Array(N).fill(0));
+
+                for (let r = 0; r < N; r++) {
+                    for (let c = 0; c < M; c++) {
+                        newMatrix[c][N - 1 - r] = matrix[r][c];
+                    }
+                }
+                return newMatrix;
+            }
+
+            // Check for collision
+            collision(xOffset, yOffset, newShape) {
+                for (let r = 0; r < newShape.length; r++) {
+                    for (let c = 0; c < newShape[r].length; c++) {
+                        // If the square is part of the piece AND
+                        // (it hits a wall OR hits the top OR hits another locked piece)
+                        if (newShape[r][c]) {
+                            const newX = this.x + c + xOffset;
+                            const newY = this.y + r + yOffset;
+
+                            // Check left/right walls
+                            if (newX < 0 || newX >= COLS) {
+                                return true;
+                            }
+                            // Check top boundary (which is now the "bottom" for upward movement)
+                            if (newY < 0) {
+                                return true;
+                            }
+                            // Check for collision with existing pieces (within board bounds)
+                            if (newY >= 0 && newY < ROWS && board[newY][newX] !== EMPTY) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            // Lock the piece in place on the board
+            lock() {
+                for (let r = 0; r < this.shape.length; r++) {
+                    for (let c = 0; c < this.shape[r].length; c++) {
+                        if (this.shape[r][c]) {
+                            // Game over condition: piece locks beyond the top of the board (y < 0)
+                            // For upward play, game over if piece locks at or beyond the top (y=0 or less)
+                            if (this.y + r < 0) {
+                                showMessageBox("Game Over! Your Score: " + score);
+                                gameOver = true;
+                                clearInterval(gameLoop);
+                                return;
+                            }
+                            board[this.y + r][this.x + c] = this.color;
+                        }
+                    }
+                }
+                clearLines();
+            }
+        }
+
+        // --- Drawing Functions ---
+        function drawSquare(x, y, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            ctx.strokeStyle = 'rgba(0,0,0,0.1)'; // Inner grid lines
+            ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)'; // Outer grid lines for board
+            ctx.strokeRect(x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
+        }
+
+        function drawBoard() {
+            for (let r = 0; r < ROWS; r++) {
+                for (let c = 0; c < COLS; c++) {
+                    drawSquare(c, r, board[r][c]);
+                }
+            }
+        }
+
+        function drawNextPiece() {
+            // This function is still a placeholder.
+            // For a full implementation, you would draw the 'nextPiece' in a separate display area.
+        }
+
+        // --- Game Logic ---
+        function generateNewPiece() {
+            if (nextPiece) {
+                currentPiece = nextPiece;
+            } else {
+                const randomShape = Math.floor(Math.random() * SHAPES.length);
+                currentPiece = new Piece(SHAPES[randomShape], COLORS[randomShape]);
+            }
+
+            const randomNextShape = Math.floor(Math.random() * SHAPES.length);
+            nextPiece = new Piece(SHAPES[randomNextShape], COLORS[randomNextShape]);
+
+            // Check for immediate game over when a new piece spawns
+            if (currentPiece.collision(0, 0, currentPiece.shape)) {
+                showMessageBox("Game Over! Your Score: " + score);
+                gameOver = true;
+                clearInterval(gameLoop);
+            } else {
+                currentPiece.draw();
+                drawNextPiece();
+            }
+        }
+
+        function clearLines() {
+            let linesCleared = 0;
+            // Iterate from top to bottom
+            for (let r = 0; r < ROWS; r++) {
+                let rowFull = true;
+                for (let c = 0; c < COLS; c++) {
+                    if (board[r][c] === EMPTY) {
+                        rowFull = false;
+                        break;
+                    }
+                }
+                if (rowFull) {
+                    linesCleared++;
+                    // Move all rows below down by one (to fill the cleared row)
+                    for (let y = r; y < ROWS - 1; y++) {
+                        for (let c = 0; c < COLS; c++) {
+                            board[y][c] = board[y + 1][c];
+                        }
+                    }
+                    // Fill the bottom row (row ROWS-1) with empty cells
+                    for (let c = 0; c < COLS; c++) {
+                        board[ROWS - 1][c] = EMPTY;
+                    }
+                    r--; // Recheck the current row as a new row has moved into its place
+                }
+            }
+            if (linesCleared > 0) {
+                score += linesCleared * 100 * level; // Score for clearing lines
+                updateScoreAndLevel();
+                drawBoard(); // Redraw the entire board after clearing lines
+            }
+        }
+
+        function updateScoreAndLevel() {
+            scoreDisplay.textContent = `Score: ${score}`;
+            const newLevel = Math.floor(score / 500) + 1; // Increase level every 500 points
+            if (newLevel > level) {
+                level = newLevel;
+                levelDisplay.textContent = `Level: ${level}`;
+                dropInterval = Math.max(50, dropInterval * 0.8); // Make it faster, but not too fast
+                if (gameLoop) {
+                    clearInterval(gameLoop);
+                    gameLoop = setInterval(gameTick, dropInterval);
+                }
+            }
+        }
+
+        function gameTick() {
+            if (!gameOver) {
+                currentPiece.moveUpOneStep(); // Automatic movement is now upward
+            }
+        }
+
+        // --- Event Listeners ---
+        document.addEventListener('keydown', (e) => {
+            if (gameOver) return;
+            if (e.key === 'ArrowLeft') {
+                currentPiece.moveLeft();
+            } else if (e.key === 'ArrowRight') {
+                currentPiece.moveRight();
+            } else if (e.key === 'ArrowDown') { // Arrow Down now performs hard rise
+                currentPiece.moveUpAllTheWay();
+            } else if (e.key === 'ArrowUp' || e.key === ' ' || e.key === 'x' || e.key === 'X') { // Up arrow, space, X for rotate
+                currentPiece.rotate();
+            }
+        });
+
+        // Button controls
+        document.getElementById('leftButton').addEventListener('click', () => {
+            if (!gameOver && currentPiece) currentPiece.moveLeft();
+        });
+        document.getElementById('upButton').addEventListener('click', () => { // Up button now performs hard rise
+            if (!gameOver && currentPiece) currentPiece.moveUpAllTheWay();
+        });
+        document.getElementById('rightButton').addEventListener('click', () => {
+            if (!gameOver && currentPiece) currentPiece.moveRight();
+        });
+        document.getElementById('rotateButton').addEventListener('click', () => {
+            if (!gameOver && currentPiece) currentPiece.rotate();
+        });
+        document.getElementById('startButton').addEventListener('click', () => {
+            if (gameOver || !gameLoop) { // Only start if game is over or not yet started
+                init();
+                gameLoop = setInterval(gameTick, dropInterval);
+            }
+        });
+        document.getElementById('resetButton').addEventListener('click', () => {
+            clearInterval(gameLoop);
+            init();
+        });
+
+        messageBoxButton.addEventListener('click', () => {
+            messageBox.style.display = 'none';
+        });
+
+        function showMessageBox(message) {
+            messageText.textContent = message;
+            messageBox.style.display = 'block';
+        }
+
+        // Initial setup when the page loads
+        window.onload = function() {
+            init();
+        };
+    </script>
+</body>
+</html>
