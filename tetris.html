@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris Game (Upward Play)</title>
+    <title>Scale Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
@@ -122,8 +122,12 @@
 </head>
 <body class="bg-gray-900 flex items-center justify-center min-h-screen">
     <div class="game-container">
-        <h1 class="text-3xl font-bold text-blue-400 mb-4">Tetris (Scale Up)</h1>
-        <canvas id="tetrisCanvas" width="200" height="400"></canvas> <!-- Adjusted dimensions -->
+        <h1 class="text-3xl font-bold text-blue-400 mb-4">TBBS Scale Up</h1>
+        <div class="control-row">
+            <button id="startButton" class="control-button">Start</button>
+            <button id="resetButton" class="control-button">Reset</button>
+        </div>
+        <canvas id="tetrisCanvas" width="200" height="400"></canvas>
         <div class="game-info">
             <div id="score" class="text-xl">Score: 0</div>
             <div id="level" class="text-xl">Level: 1</div>
@@ -136,10 +140,6 @@
                 <button id="leftButton" class="control-button">Left</button>
                 <button id="upButton" class="control-button">Up</button>
                 <button id="rightButton" class="control-button">Right</button>
-            </div>
-            <div class="control-row">
-                <button id="startButton" class="control-button">Start Game</button>
-                <button id="resetButton" class="control-button">Reset Game</button>
             </div>
         </div>
     </div>
@@ -184,11 +184,17 @@
         let score = 0;
         let level = 1;
         let dropInterval = 1000; // Milliseconds (now for upward movement)
-        let gameLoop;
+        let gameLoop = null; // Initialize gameLoop to null
         let gameOver = false;
 
         // --- Game Initialization ---
         function init() {
+            // Clear any existing game loop before re-initializing
+            if (gameLoop) {
+                clearInterval(gameLoop);
+                gameLoop = null; // Explicitly set to null
+            }
+
             // Create an empty board
             for (let r = 0; r < ROWS; r++) {
                 board[r] = [];
@@ -205,7 +211,6 @@
             drawBoard();
             generateNewPiece();
             drawNextPiece();
-            if (gameLoop) clearInterval(gameLoop); // Clear any existing loop
         }
 
         // --- Piece Class ---
@@ -363,6 +368,7 @@
                                 showMessageBox("Game Over! Your Score: " + score);
                                 gameOver = true;
                                 clearInterval(gameLoop);
+                                gameLoop = null; // Explicitly set gameLoop to null on game over
                                 return;
                             }
                             board[this.y + r][this.x + c] = this.color;
@@ -413,6 +419,7 @@
                 showMessageBox("Game Over! Your Score: " + score);
                 gameOver = true;
                 clearInterval(gameLoop);
+                gameLoop = null; // Explicitly set gameLoop to null on game over
             } else {
                 currentPiece.draw();
                 drawNextPiece();
@@ -459,10 +466,11 @@
                 level = newLevel;
                 levelDisplay.textContent = `Level: ${level}`;
                 dropInterval = Math.max(50, dropInterval * 0.8); // Make it faster, but not too fast
+                // Re-establish the game loop with the new interval
                 if (gameLoop) {
                     clearInterval(gameLoop);
-                    gameLoop = setInterval(gameTick, dropInterval);
                 }
+                gameLoop = setInterval(gameTick, dropInterval);
             }
         }
 
@@ -500,13 +508,15 @@
             if (!gameOver && currentPiece) currentPiece.rotate();
         });
         document.getElementById('startButton').addEventListener('click', () => {
-            if (gameOver || !gameLoop) { // Only start if game is over or not yet started
+            // Start the game only if it's currently stopped (gameOver is true or gameLoop is null)
+            if (gameOver || gameLoop === null) {
                 init();
                 gameLoop = setInterval(gameTick, dropInterval);
             }
         });
         document.getElementById('resetButton').addEventListener('click', () => {
             clearInterval(gameLoop);
+            gameLoop = null; // Explicitly set gameLoop to null on reset
             init();
         });
 
